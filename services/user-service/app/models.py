@@ -1,17 +1,33 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, Numeric, String, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, Column, DateTime, Numeric, String, ForeignKey, TypeDecorator
 from sqlalchemy.orm import relationship
 
 from .database import Base
 
 
+class GUID(TypeDecorator):
+    """Platform-independent UUID type. Uses String(36) for SQLite compatibility."""
+
+    impl = String(36)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            return str(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return uuid.UUID(value) if not isinstance(value, uuid.UUID) else value
+        return value
+
+
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=False)
@@ -27,8 +43,8 @@ class User(Base):
 class Wallet(Base):
     __tablename__ = "wallets"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID(), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     balance = Column(Numeric(15, 2), nullable=False, default=0.00)
     currency = Column(String(3), nullable=False, default="USD")
     is_frozen = Column(Boolean, default=False)

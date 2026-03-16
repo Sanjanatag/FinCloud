@@ -33,9 +33,7 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
     aws_secret_name: str = ""
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
+    model_config = {"env_file": ".env", "extra": "ignore"}
 
 
 @lru_cache()

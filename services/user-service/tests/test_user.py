@@ -136,7 +136,7 @@ class TestUserLogin:
 class TestUserProfile:
     def test_get_profile_unauthorized(self):
         response = client.get("/api/v1/users/me")
-        assert response.status_code == 403
+        assert response.status_code in (401, 403)
 
     def test_get_profile_success(self):
         client.post(

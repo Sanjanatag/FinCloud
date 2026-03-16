@@ -35,9 +35,7 @@ class Settings(BaseSettings):
     max_transaction_amount: float = 10000.00
     daily_transaction_limit: float = 50000.00
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
+    model_config = {"env_file": ".env", "extra": "ignore"}
 
 
 @lru_cache()
